@@ -8,3 +8,15 @@ body,
 html {
   height: 100%;
 }
+ul {
+  margin-left: auto;
+  margin-right: auto;
+  padding:0;
+  width: 100px;
+  list-style-type: none;
+}
+
+ul li {
+  font-size: 20pt;
+  text-align:center;
+}
