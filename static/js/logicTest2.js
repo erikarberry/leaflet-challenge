@@ -104,19 +104,19 @@ function createMap(earthquakes) {
   //           d < 7  ? '#FED976' :
   //                   '#FFEDA0';
   // }
-  // // Create a legend to display information about our map
-  // var legend = L.control({position: 'bottomright'});
-  // legend.onAdd = function (map) {
-  //   var div = L.DomUtil.create('div', 'info legend'),
-  //   bins = [0, 1, 2, 3, 4, 5];
-  //   div.innerHTML+='Magnitude<br><hr>'
-  //   // loop through our density intervals and generate a label with a colored square for each interval
-  //   for (var i = 0; i < bins.length; i++) {
-  //       div.innerHTML +=
-  //           '<i style="background:' + getColor(bins[i] + 1) + '">&nbsp&nbsp&nbsp&nbsp</i> ' +
-  //           bins[i] + (bins[i + 1] ? '&ndash;' + bins[i + 1] + '<br>' : '+');
-  //   }
-  // }
+  // Create a legend to display information about our map
+  var legend = L.control({position: 'bottomright'});
+  legend.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'info legend'),
+    bins = [0, 1, 2, 3, 4, 5];
+    div.innerHTML+='Magnitude<br><hr>'
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < bins.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getColor(bins[i] + 1) + '">&nbsp&nbsp&nbsp&nbsp</i> ' +
+            bins[i] + (bins[i + 1] ? '&ndash;' + bins[i + 1] + '<br>' : '+');
+    }
+  }
   };
 
 // Create a layer control

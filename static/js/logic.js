@@ -20,32 +20,25 @@ function createFeatures(earthquakeData) {
 // Run the onEachFeature function once for each piece of data in the array
     var earthquakes = L.geoJSON(earthquakeData, {
         onEachFeature: onEachFeature,
-    //     pointToLayer: function (feature, latlng) {
-    //         var color;
-    //         var r = 255;
-    //         var g = Math.floor(255-80*feature.properties.mag);
-    //         var b = Math.floor(255-80*feature.properties.mag);
-    //         color= "rgb("+r+" ,"+g+","+ b+")"
+        pointToLayer: function (feature, latlng) {
+          var colorScaleRange = ['#ffffb2', '#bd0026']
+          var minmax = d3.extent(earthquakeData.map((feature) => feature.properties.mag));
+          var range = [0, earthquakeData.length - 1];
+          var domain = [1,minmax[1]];
+          var bins = d3.ticks(Math.floor(minmax[0]), minmax[1], Math.ceil(minmax[1] - minmax[0]));
+          var colorScale = d3.scaleLinear().domain(minmax).range(colorScaleRange);
+          var getColor  = d3.scaleLinear().domain(domain).range(colorScale);
       
-    // var geojsonMarkerOptions = {
-    //     radius: 4*feature.properties.mag,
-    //     fillColor: color,
-    //     color: "black",
-    //     weight: 1,
-    //     opacity: 1,
-    //     fillOpacity: 0.8
-    //   };
-    // return L.circleMarker(latlng, geojsonMarkerOptions);
-    // }
-
-    // Setting the marker radius for the city by passing population into the markerSize function
-    // var markers = {
-        // stroke: false,
-        // fillOpacity: 0.8,
-        // color: "purple",
-        // fillColor: "purple",
-        // radius: 4*feature.properties.mag,
-    // }
+          var geojsonMarkerOptions = {
+            radius: 2*feature.properties.mag,
+            fillColor: colorScale(+feature.properties.mag),
+            color: "#000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+            };
+          return L.circleMarker(latlng, geojsonMarkerOptions);
+          }
   });
 
 // Sending our earthquakes layer to the createMap function
@@ -54,19 +47,6 @@ createMap(earthquakes);
 
 function createMap(earthquakes) {
 
-  // var quakeMarkers = [];
-
-  // for (var i=0; i< locations.length; i++) {
-  //   quakeMarkers.push(
-  //     L.circle(locations[i].coordinates, {
-  //       stroke: false,
-  //       fillOpacity: 0.8,
-  //       color: "white",
-  //       fillColor: "white",
-  //       radius: 4*feature.properties.mag,
-  //     })
-  //   )
-  // }
 // Define streetmap and darkmap layers
   var streetmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
       attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
@@ -74,20 +54,10 @@ function createMap(earthquakes) {
       id: "mapbox.streets",
       accessToken: API_KEY
   });
-
-  var darkmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-      attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-      maxZoom: 18,
-      id: "mapbox.dark",
-      accessToken: API_KEY
-  });
-
-  // var mag = L.layerGroup(quakeMarkers);
   
 // Define a baseMaps object to hold our base layers
   var baseMaps = {
-      "Street Map": streetmap,
-      "Dark Map": darkmap
+      "Street Map": streetmap
   };
 
 // Create overlay object to hold our overlay layer
@@ -105,34 +75,30 @@ function createMap(earthquakes) {
   });
 
 // function getColor(d) {
-//     return d < 1 ? 'rgb(255,255,255)' :
-//         d < 2  ? 'rgb(255,225,225)' :
-//         d < 3  ? 'rgb(255,195,195)' :
-//         d < 4  ? 'rgb(255,165,165)' :
-//         d < 5  ? 'rgb(255,135,135)' :
-//         d < 6  ? 'rgb(255,105,105)' :
-//         d < 7  ? 'rgb(255,75,75)' :
-//         d < 8  ? 'rgb(255,45,45)' :
-//         d < 9  ? 'rgb(255,15,15)' :
+//     return d < 1 ? 'rgb(255,255,178)' :
+//         d < 2  ? 'rgb(254,217,118)' :
+//         d < 3  ? 'rgb(254,178,76)' :
+//         d < 4  ? 'rgb(253,141,60)' :
+//         d < 5  ? 'rgb(240,59,32)' :
+//         d < 6  ? 'rgb(189,0,38)' :
 //                     'rgb(255,0,0)';
 // }
 
-// // Create a legend to display information about our map
+// // // Create a legend to display information about our map
 // var legend = L.control({position: 'bottomright'});
-
-// legend.onAdd = function (map) {
-
+// legend.onAdd = function () {
 //     var div = L.DomUtil.create('div', 'info legend'),
-//     grades = [0, 1, 2, 3, 4, 5, 6, 7, 8],
+//     bins = [0, 1, 2, 3, 4, 5],
 //     labels = [];
 
 //     div.innerHTML+='Magnitude<br><hr>'
 
 //     // loop through our density intervals and generate a label with a colored square for each interval
-//     for (var i = 0; i < grades.length; i++) {
+//     for (var i = 0; i < bins.length; i++) {
 //         div.innerHTML +=
-//             '<i style="background:' + getColor(grades[i] + 1) + '">&nbsp&nbsp&nbsp&nbsp</i> ' +
-//             grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+//             '<i style="background:' + getColor(bins[i] + 1) + '">&nbsp&nbsp&nbsp&nbsp</i> ' +
+//             bins[i] + (bins[i + 1] ? '&ndash;' + bins[i + 1] + '<br>' : '+');
+//     }
 // }
 };
   // Create a layer control
